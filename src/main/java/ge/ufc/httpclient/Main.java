@@ -11,6 +11,9 @@ import java.net.URISyntaxException;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
+import java.time.Duration;
+import java.time.temporal.ChronoUnit;
+
 
 public class Main {
     private static Setting setting;
@@ -19,55 +22,56 @@ public class Main {
         setting = Configuration.getConfiguration().getSetting();
 
 //        N1
-//        getUser(1);
+        getUser(1);    //success
 //      -------------
 //        N2
-//        getUser(14);
+//        getUser(14);   //User not found
 //      -------------
 //        N3
-//        PostFillBalance ps = new PostFillBalance("126",3,150);
-//        fillBalance(ps);
+//        PostFillBalance ps = new PostFillBalance("171",1,50);
+//        System.out.println( fillBalance(ps));  //success
+
 //      -------------
 //        N4
-//        PostFillBalance ps = new PostFillBalance("1006", 30, 150);
-//        fillBalance(ps);
+//        PostFillBalance ps = new PostFillBalance("1001", 30, 150);
+//        System.out.println(fillBalance(ps));   //404(User not found)
+//       -------------
 
 //        N5
-//       -------------
-//        PostFillBalance ps = new PostFillBalance("1009", 3, -150);
-//        fillBalance(ps);
+//        PostFillBalance ps = new PostFillBalance("1003", 3, -150);
+//        System.out.println(fillBalance(ps));     //404 unacceptable amount
 
 //        N6
 //       -------------
 //        PostFillBalance ps = new PostFillBalance("126", 3, 150);
-//        fillBalance(ps);
+//        System.out.println(fillBalance(ps));     //200
 
 //        N7
 //       -------------
-//        PostFillBalance ps = new PostFillBalance("119", 3, 0); !!!!!!!!!!!
-//        fillBalance(ps);
+//        PostFillBalance ps = new PostFillBalance("156", 3, 0);
+//        System.out.println( fillBalance(ps));       //200
 
 //        N8
 //       -------------
 //        PostFillBalance ps = new PostFillBalance("94", 1, -1000);
-//        fillBalance(ps);
+//        System.out.println(fillBalance(ps));             //status code 400
 
 
 //        N9
 //       -------------
 //        PostFillBalance ps = new PostFillBalance("106", 2, 500);
-//        fillBalance(ps);
+//        System.out.println(fillBalance(ps));        //status code = 409
 
 //        N10
 //       -------------
 //        PostFillBalance ps = new PostFillBalance("106", 3, 50);
-//        fillBalance(ps);
+//        System.out.println(fillBalance(ps));
 
     }
 
     public static void getUser(int id) throws URISyntaxException, IOException, InterruptedException {
         HttpRequest request = HttpRequest.newBuilder().uri(
-                new URI(setting.getUrl1() + id)).GET().build();
+                new URI(setting.getUrl1() + id)).GET() .timeout(Duration.of(setting.getTimeout(), ChronoUnit.SECONDS)).build();
 
         HttpResponse<String> response = HttpClient.newHttpClient().
                 send(request, HttpResponse.BodyHandlers.ofString());
@@ -79,16 +83,24 @@ public class Main {
         }
     }
 
-    public static void fillBalance(PostFillBalance ps) throws URISyntaxException, IOException, InterruptedException {
+    public static String fillBalance(PostFillBalance ps) throws URISyntaxException, IOException, InterruptedException {
         Gson gson = new Gson();
         String json = gson.toJson(ps);
         HttpRequest request = HttpRequest.newBuilder().uri(
                         new URI(setting.getUrl2())).headers("Content-Type", "application/json")
-                .POST(HttpRequest.BodyPublishers.ofString(json)).build();
+                .POST(HttpRequest.BodyPublishers.ofString(json)).timeout(Duration.of(setting.getTimeout(), ChronoUnit.SECONDS)).build();
 
         HttpResponse<String> response = HttpClient.newHttpClient().send(request, HttpResponse.BodyHandlers.ofString());
-        System.out.println(response.body());
-        System.out.println(response.statusCode());
+        int status = response.statusCode();
+
+        if (status == 200) {
+            return "Response status code: " + response.statusCode() + "\n" + response.body();
+        }
+        return response.body();
+//        if (response.statusCode()>200){
+//            return "Response status code: "+response.statusCode();
+//        }
+//        return String.valueOf(response.statusCode());
 
     }
 }
