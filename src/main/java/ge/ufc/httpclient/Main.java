@@ -48,7 +48,7 @@ public class Main {
 
 //        N7
 //       -------------
-//        PostFillBalance ps = new PostFillBalance("156", 3, 0);
+//        PostFillBalance ps = new PostFillBalance("156", 3, 200);
 //        System.out.println( fillBalance(ps));       //200
 
 //        N8
@@ -97,10 +97,7 @@ public class Main {
             return "Response status code: " + response.statusCode() + "\n" + response.body();
         }
         return response.body();
-//        if (response.statusCode()>200){
-//            return "Response status code: "+response.statusCode();
-//        }
-//        return String.valueOf(response.statusCode());
+
 
     }
 }
